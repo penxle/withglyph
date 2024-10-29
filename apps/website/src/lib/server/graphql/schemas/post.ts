@@ -1625,6 +1625,13 @@ builder.mutationFields((t) => ({
       await enqueueJob('indexPost', input.postId);
       await enqueueJob('notifyIndexNow', input.postId);
 
+      if (post.state !== 'PUBLISHED') {
+        await enqueueJob('createNotification', {
+          category: 'NEW_POST',
+          targetId: input.postId,
+        });
+      }
+
       return input.postId;
     },
   }),
