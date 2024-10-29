@@ -35,9 +35,10 @@ class AppRouter extends RootStackRouter {
           path: '',
           transitionsBuilder: TransitionsBuilders.fadeIn,
           children: [
+            AutoRoute(page: CropRoute.page, initial: true),
             AutoRoute(
               page: LobbyShell.page,
-              initial: true,
+              // initial: true,
               children: [
                 AutoRoute(
                   page: FeedRoute.page,
