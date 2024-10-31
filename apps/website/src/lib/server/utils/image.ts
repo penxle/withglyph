@@ -187,7 +187,7 @@ export const generatePostShareImage = async ({
               children: body,
               style: {
                 display: 'block',
-                fontFamily: font,
+                fontFamily: `${font}, ${font === 'Pretendard' ? 'sans-serif' : 'serif'}`,
                 fontSize: size === 'small' ? '14px' : size === 'medium' ? '16px' : '18px',
                 // lineHeight: font === 'RIDIBatang' ? '2.215' : '1.875', // 30px for Pretendard, 34px for RIDIBatang
                 lineHeight: font === 'RIDIBatang' ? '34px' : '30px', // 30px for Pretendard, 34px for RIDIBatang
