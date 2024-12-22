@@ -48,7 +48,7 @@ class IdentificationScreen extends StatelessWidget {
                   '- 본인인증을 통해 연령제한 콘텐츠를 이용할 수 있어요.\n',
                   style: TextStyle(fontSize: 12, color: BrandColors.gray_500),
                 ),
-                if (identified) ...[
+                if (identified && Jiffy.parse(data.me!.personalIdentity!.expiresAt!.value).isAfter(Jiffy.now())) ...[
                   const Gap(24),
                   Container(
                     width: double.infinity,
