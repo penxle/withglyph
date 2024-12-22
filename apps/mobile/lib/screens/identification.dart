@@ -30,7 +30,8 @@ class IdentificationScreen extends StatelessWidget {
       child: GraphQLOperation(
         operation: GIdentificationScreen_QueryReq(),
         builder: (context, client, data) {
-          final identified = data.me?.personalIdentity != null;
+          final identified = data.me?.personalIdentity != null &&
+              Jiffy.parse(data.me!.personalIdentity!.expiresAt!.value).isAfter(Jiffy.now());
 
           return Padding(
             padding: const Pad(horizontal: 20, top: 20, bottom: 16),
@@ -48,7 +49,7 @@ class IdentificationScreen extends StatelessWidget {
                   '- 본인인증을 통해 연령제한 콘텐츠를 이용할 수 있어요.\n',
                   style: TextStyle(fontSize: 12, color: BrandColors.gray_500),
                 ),
-                if (identified && Jiffy.parse(data.me!.personalIdentity!.expiresAt!.value).isAfter(Jiffy.now())) ...[
+                if (identified) ...[
                   const Gap(24),
                   Container(
                     width: double.infinity,
