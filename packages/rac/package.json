@@ -12,13 +12,13 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@pothos/core": "^4.0.2",
-    "@pothos/plugin-dataloader": "^4.0.2",
+    "@pothos/core": "^4.3.0",
+    "@pothos/plugin-dataloader": "^4.2.0",
     "graphql": "^16.9.0",
     "radash": "^12.1.0"
   },
   "devDependencies": {
     "@withglyph/tsconfig": "workspace:^",
-    "tsup": "^8.1.2"
+    "tsup": "^8.3.5"
   }
 }
