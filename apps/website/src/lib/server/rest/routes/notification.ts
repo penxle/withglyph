@@ -71,6 +71,19 @@ notification.get('/notification/:notificationId', async (request) => {
 
           return `/${posts[0].space.slug}/${posts[0].permalink}`;
         })
+        .with({ category: 'NEW_POST' }, async ({ data }) => {
+          const posts = await database
+            .select({ permalink: Posts.permalink, space: { slug: Spaces.slug } })
+            .from(Posts)
+            .innerJoin(Spaces, eq(Spaces.id, Posts.spaceId))
+            .where(eq(Posts.id, data.postId));
+
+          if (posts.length === 0) {
+            return `/404`;
+          }
+
+          return `/${posts[0].space.slug}/${posts[0].permalink}`;
+        })
         .exhaustive(),
     },
   });

@@ -10,6 +10,7 @@
   import { center, circle, flex } from '$styled-system/patterns';
   import CommentNotification from './CommentNotification.svelte';
   import EmojiReactionNotification from './EmojiReactionNotification.svelte';
+  import NewPostNotification from './NewPostNotification.svelte';
   import PurchaseNotification from './PurchaseNotification.svelte';
   import SubscribeNotification from './SubscribeNotification.svelte';
   import type { DefaultLayout_NotificationMenu_user } from '$glitch';
@@ -44,6 +45,7 @@
           ...SubscribeNotification_subscribeNotification
           ...PurchaseNotification_purchaseNotification
           ...EmojiReactionNotification_emojiReactionNotification
+          ...NewPostNotification_newPostNotification
         }
       }
     `),
@@ -229,6 +231,8 @@
             <PurchaseNotification $purchaseNotification={notification} />
           {:else if notification.__typename === 'EmojiReactionNotification'}
             <EmojiReactionNotification $emojiReactionNotification={notification} via="menu" />
+          {:else if notification.__typename === 'NewPostNotification'}
+            <NewPostNotification $newPostNotification={notification} />
           {/if}
         </li>
       {:else}
