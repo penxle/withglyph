@@ -773,17 +773,6 @@ export const Users = pgTable(
   }),
 );
 
-export const UserWithdrawalConfigs = pgTable('user_withdrawal_configs', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  userId: text('user_id')
-    .notNull()
-    .unique()
-    .references(() => Users.id),
-  monthlyWithdrawalEnabled: boolean('monthly_withdrawal_enabled').notNull().default(false),
-});
-
 export const UserSettlementIdentities = pgTable('user_settlement_identities', {
   id: text('id')
     .primaryKey()
@@ -800,6 +789,9 @@ export const UserSettlementIdentities = pgTable('user_settlement_identities', {
   bankCode: text('bank_code').notNull(),
   bankAccountNumber: text('bank_account_number').notNull(),
   bankAccountHolderName: text('bank_account_holder_name').notNull(),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`now()`),
 });
 
 export const UserNotifications = pgTable(

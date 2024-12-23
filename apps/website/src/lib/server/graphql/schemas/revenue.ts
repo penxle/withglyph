@@ -1,20 +1,12 @@
-import dayjs from 'dayjs';
 import { and, eq } from 'drizzle-orm';
 import { RevenueKind, RevenueState, RevenueWithdrawalKind, RevenueWithdrawalState } from '$lib/enums';
-import { IntentionalError, NotFoundError } from '$lib/errors';
-import {
-  database,
-  PostPurchases,
-  Revenues,
-  RevenueWithdrawals,
-  UserSettlementIdentities,
-  UserWithdrawalConfigs,
-} from '$lib/server/database';
+import { NotFoundError } from '$lib/errors';
+import { database, PostPurchases, Revenues, RevenueWithdrawals } from '$lib/server/database';
 import { settleRevenue } from '$lib/server/utils';
 import { builder } from '../builder';
 import { createObjectRef } from '../utils';
 import { Post } from './post';
-import { User, UserWithdrawalConfig } from './user';
+import { User } from './user';
 
 /**
  * * Types
@@ -104,66 +96,6 @@ builder.mutationFields((t) => ({
       await settleRevenue({ userId: context.session.userId, settlementType: 'INSTANT' });
 
       return context.session.userId;
-    },
-  }),
-
-  enableMonthlyWithdrawal: t.withAuth({ user: true }).field({
-    type: UserWithdrawalConfig,
-    resolve: async (_, __, context) => {
-      if (dayjs().kst().date() === 10) throw new IntentionalError('매월 10일에는 자동 출금 설정을 변경할 수 없어요');
-
-      const userSettlementIdentities = await database
-        .select({ id: UserSettlementIdentities.id })
-        .from(UserSettlementIdentities)
-        .where(eq(UserSettlementIdentities.userId, context.session.userId));
-
-      if (userSettlementIdentities.length === 0) {
-        throw new IntentionalError('먼저 계좌 인증을 진행해주세요');
-      }
-
-      const [userWithdrawalConfig] = await database
-        .insert(UserWithdrawalConfigs)
-        .values({
-          userId: context.session.userId,
-          monthlyWithdrawalEnabled: true,
-        })
-        .onConflictDoUpdate({
-          target: UserWithdrawalConfigs.userId,
-          set: { monthlyWithdrawalEnabled: true },
-        })
-        .returning({ id: UserWithdrawalConfigs.id });
-
-      return userWithdrawalConfig.id;
-    },
-  }),
-
-  disableMonthlyWithdrawal: t.withAuth({ user: true }).field({
-    type: UserWithdrawalConfig,
-    resolve: async (_, __, context) => {
-      if (dayjs().kst().date() === 10) throw new IntentionalError('매월 10일에는 자동 출금 설정을 변경할 수 없어요');
-
-      const userSettlementIdentities = await database
-        .select({ id: UserSettlementIdentities.id })
-        .from(UserSettlementIdentities)
-        .where(eq(UserSettlementIdentities.userId, context.session.userId));
-
-      if (userSettlementIdentities.length === 0) {
-        throw new IntentionalError('먼저 계좌 인증을 진행해주세요');
-      }
-
-      const [userWithdrawalConfig] = await database
-        .insert(UserWithdrawalConfigs)
-        .values({
-          userId: context.session.userId,
-          monthlyWithdrawalEnabled: false,
-        })
-        .onConflictDoUpdate({
-          target: UserWithdrawalConfigs.userId,
-          set: { monthlyWithdrawalEnabled: false },
-        })
-        .returning({ id: UserWithdrawalConfigs.id });
-
-      return userWithdrawalConfig.id;
     },
   }),
 }));

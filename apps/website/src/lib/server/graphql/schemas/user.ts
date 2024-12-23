@@ -56,7 +56,6 @@ import {
   UserSingleSignOns,
   UserSpaceMutes,
   UserTagMutes,
-  UserWithdrawalConfigs,
 } from '$lib/server/database';
 import { sendEmail } from '$lib/server/email';
 import { LoginUser, UpdateUserEmail } from '$lib/server/email/templates';
@@ -72,7 +71,7 @@ import {
   getUserRevenue,
   useFirstRow,
 } from '$lib/server/utils';
-import { generateRandomName, getMonthlyWithdrawalDayjs } from '$lib/utils';
+import { generateRandomName } from '$lib/utils';
 import {
   CreateUserSchema,
   DeleteUserSchema,
@@ -675,30 +674,6 @@ UserSettlementIdentity.implement({
             bankAccountHolderName.at(0) + '*'.repeat(bankAccountHolderName.length - 2) + bankAccountHolderName.at(-1)
           );
         }
-      },
-    }),
-  }),
-});
-
-export const UserWithdrawalConfig = createObjectRef('UserWithdrawalConfig', UserWithdrawalConfigs);
-UserWithdrawalConfig.implement({
-  fields: (t) => ({
-    id: t.exposeID('id'),
-    monthlyWithdrawalEnabled: t.exposeBoolean('monthlyWithdrawalEnabled'),
-    monthlyWithdrawalDue: t.field({
-      type: 'DateTime',
-      nullable: true,
-      resolve: async ({ userId, monthlyWithdrawalEnabled }) => {
-        if (!monthlyWithdrawalEnabled) {
-          return null;
-        }
-
-        const revenueAmount = await getUserRevenue({ userId, monthlyWithdrawableOnly: true });
-        if (revenueAmount < 30_000) {
-          return null;
-        }
-
-        return getMonthlyWithdrawalDayjs().add(dayjs().kst().date() > 10 ? 1 : 0, 'month');
       },
     }),
   }),
