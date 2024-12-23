@@ -38,7 +38,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
     return DefaultShell(
       bottomBorder: false,
       useSafeArea: true,
-      title: '임시저장함',
+      title: '임시보관함',
       child: GraphQLOperation(
         operation: GDraftsScreen_QueryReq(),
         builder: (context, client, data) {

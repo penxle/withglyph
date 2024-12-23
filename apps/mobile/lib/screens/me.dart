@@ -280,7 +280,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   children: [
                     _MenuItem(
                       icon: Tabler.clipboard_text,
-                      title: '임시저장함',
+                      title: '임시보관함',
                       onPressed: () async {
                         await context.router.push(const DraftsRoute());
                       },
