@@ -4,6 +4,7 @@ import { NotFoundError } from '$lib/errors';
 import { redis, useCache } from '$lib/server/cache';
 import {
   database,
+  inArray,
   notInArray,
   Posts,
   PostTags,
@@ -132,12 +133,24 @@ Tag.implement({
           return false;
         }
 
-        const follows = await database
-          .select({ id: TagFollows.id })
-          .from(TagFollows)
-          .where(and(eq(TagFollows.tagId, tag.id), eq(TagFollows.userId, context.session.userId)));
+        const loader = context.loader({
+          name: 'tagFollows(tagId)',
+          nullable: true,
+          load: async (tagIds: string[]) => {
+            if (!context.session) {
+              return [];
+            }
 
-        return follows.length > 0;
+            return database
+              .select()
+              .from(TagFollows)
+              .where(and(inArray(TagFollows.tagId, tagIds), eq(TagFollows.userId, context.session.userId)));
+          },
+
+          key: (tagFollow) => tagFollow?.tagId,
+        });
+
+        return await loader.load(tag.id).then((follow) => !!follow);
       },
     }),
 
