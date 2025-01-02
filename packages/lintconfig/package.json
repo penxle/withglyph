@@ -9,23 +9,24 @@
   },
   "dependencies": {
     "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^8.57.0",
+    "@eslint/js": "^8.57.1",
     "@prettier/plugin-xml": "^3.4.1",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-svelte": "^2.42.0",
-    "eslint-plugin-unicorn": "^54.0.0",
-    "globals": "^15.8.0",
-    "ignore": "^5.3.1",
-    "prettier-plugin-packagejson": "^2.5.1",
+    "eslint-plugin-svelte": "^2.46.0",
+    "eslint-plugin-unicorn": "^56.0.0",
+    "globals": "^15.11.0",
+    "ignore": "^6.0.2",
+    "prettier-plugin-packagejson": "^2.5.3",
     "prettier-plugin-sh": "^0.14.0",
-    "prettier-plugin-svelte": "^3.2.6",
-    "svelte-eslint-parser": "^0.40.0"
+    "prettier-plugin-svelte": "^3.2.7",
+    "svelte-eslint-parser": "^0.43.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.11"
+    "@types/node": "^22.8.7"
   },
   "peerDependencies": {
     "eslint": "^8.0.0",

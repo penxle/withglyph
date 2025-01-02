@@ -134,7 +134,7 @@ export const Html = createNodeView<Options, Storage>(Component, {
 });
 
 const themedTokenToStyle = (token: TokenStyles) => {
-  return token.htmlStyle || stringifyTokenStyle(getTokenStyleObject(token));
+  return stringifyTokenStyle(token.htmlStyle || getTokenStyleObject(token));
 };
 
 const getDecorations = (highlighter: Highlighter, theme: BuiltinTheme, doc: Node) => {
