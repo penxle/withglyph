@@ -31,11 +31,20 @@ type EmojiReactionNotification = {
   };
 };
 
+type NewPostNotification = {
+  category: 'NEW_POST';
+  actorId: string;
+  data: {
+    postId: string;
+  };
+};
+
 export type Notification = (
   | PurchaseNotification
   | SubscribeNotification
   | CommentNotification
   | EmojiReactionNotification
+  | NewPostNotification
 ) & {
   userId: string;
 };

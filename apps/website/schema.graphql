@@ -445,6 +445,16 @@ input MuteTagInput {
   tagId: ID!
 }
 
+type NewPostNotification implements IUserNotification {
+  actor: Profile
+  category: UserNotificationCategory!
+  createdAt: DateTime!
+  data: JSON!
+  id: ID!
+  post: Post!
+  state: UserNotificationState!
+}
+
 enum PaymentMethod {
   BANK_ACCOUNT
   CREDIT_CARD
@@ -1334,6 +1344,7 @@ enum UserNotificationCategory {
   COMMENT
   DONATE
   EMOJI_REACTION
+  NEW_POST
   PURCHASE
   REPLY
   SUBSCRIBE

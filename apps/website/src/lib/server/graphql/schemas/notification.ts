@@ -36,6 +36,7 @@ IUserNotification.implement({
       .with('SUBSCRIBE', () => 'SubscribeNotification')
       .with('COMMENT', () => 'CommentNotification')
       .with('EMOJI_REACTION', () => 'EmojiReactionNotification')
+      .with('NEW_POST', () => 'NewPostNotification')
       .run(),
 });
 
@@ -121,6 +122,20 @@ EmojiReactionNotification.implement({
       },
     }),
 
+    post: t.field({
+      type: Post,
+      resolve: async (notification) => {
+        const data = notification.data as { postId: string };
+        return data.postId;
+      },
+    }),
+  }),
+});
+
+export const NewPostNotification = createObjectRef('NewPostNotification', UserNotifications);
+NewPostNotification.implement({
+  interfaces: [IUserNotification],
+  fields: (t) => ({
     post: t.field({
       type: Post,
       resolve: async (notification) => {

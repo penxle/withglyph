@@ -39,6 +39,8 @@
     `),
   );
 
+  $: console.log('$query', _query);
+
   const createPost = graphql(`
     mutation DefaultLayout_Header_CreatePost_Mutation($input: CreatePostInput!) {
       createPost(input: $input) {
