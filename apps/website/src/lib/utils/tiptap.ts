@@ -36,6 +36,7 @@ export const getMetadataFromTiptapDocument = (content: JSONContent) => {
   });
 
   return {
+    doc,
     text,
     characters,
     images,

@@ -28,6 +28,7 @@ import {
   BookmarkGroups,
   database,
   inArray,
+  notInArray,
   PostComments,
   PostContentSnapshots,
   PostContentStates,
@@ -68,7 +69,7 @@ import {
   useFirstRow,
   useFirstRowOrThrow,
 } from '$lib/server/utils';
-import { base36To10, createEmptyTiptapDocumentNode } from '$lib/utils';
+import { base36To10, createEmptyTiptapDocumentNode, getMetadataFromTiptapDocument } from '$lib/utils';
 import { PublishPostInputSchema } from '$lib/validations/post';
 import { builder } from '../builder';
 import { pubsub } from '../pubsub';
@@ -1121,6 +1122,8 @@ const CreatePostInput = builder.inputType('CreatePostInput', {
   fields: (t) => ({
     spaceId: t.id({ required: false }),
     collectionId: t.id({ required: false }),
+    isTemplate: t.boolean({ defaultValue: false }),
+    usingTemplate: t.id({ required: false }),
   }),
 });
 
@@ -1413,23 +1416,49 @@ builder.mutationFields((t) => ({
       }
 
       return await database.transaction(async (tx) => {
+        const publishOptions = input.usingTemplate
+          ? await database
+              .select({
+                visibility: Posts.visibility,
+                discloseStats: Posts.discloseStats,
+                receiveFeedback: Posts.receiveFeedback,
+                receivePatronage: Posts.receivePatronage,
+                receiveTagContribution: Posts.receiveTagContribution,
+                protectContent: Posts.protectContent,
+              })
+              .from(Posts)
+              .where(and(eq(Posts.id, input.usingTemplate)))
+              .then(useFirstRowOrThrow(new NotFoundError()))
+          : ({
+              visibility: 'PUBLIC',
+              discloseStats: true,
+              receiveFeedback: true,
+              receivePatronage: true,
+              receiveTagContribution: true,
+              protectContent: true,
+            } as const);
+
         const [post] = await tx
           .insert(Posts)
           .values({
             permalink,
             userId: context.session.userId,
             spaceId: input.spaceId,
-            state: 'EPHEMERAL',
-            visibility: 'PUBLIC',
-            discloseStats: true,
-            receiveFeedback: true,
-            receivePatronage: true,
-            receiveTagContribution: true,
-            protectContent: true,
+            state: input.isTemplate ? 'TEMPLATE' : 'EPHEMERAL',
+            ...publishOptions,
           })
           .returning({ id: Posts.id });
 
-        const node = createEmptyTiptapDocumentNode();
+        const metadata = input.usingTemplate
+          ? await tx
+              .select({ content: PostContentStates.content })
+              .from(PostContentStates)
+              .where(eq(PostContentStates.postId, input.usingTemplate))
+              .then((rows) => getMetadataFromTiptapDocument(rows[0].content))
+          : null;
+
+        const node = metadata?.doc ?? createEmptyTiptapDocumentNode();
+
         const doc = prosemirrorToYDoc(node, 'content');
         const update = Y.encodeStateAsUpdateV2(doc);
         const vector = Y.encodeStateVector(doc);
@@ -1441,10 +1470,10 @@ builder.mutationFields((t) => ({
           vector,
           upToSeq: 0n,
           content: node.toJSON(),
-          text: '',
-          characters: 0,
-          images: 0,
-          files: 0,
+          text: metadata?.text ?? '',
+          characters: metadata?.characters ?? 0,
+          images: metadata?.images ?? 0,
+          files: metadata?.files ?? 0,
         });
 
         await tx.insert(PostContentSnapshots).values({
@@ -1484,7 +1513,7 @@ builder.mutationFields((t) => ({
         .where(
           and(
             eq(Posts.id, input.postId),
-            ne(Posts.state, 'DELETED'),
+            notInArray(Posts.state, ['DELETED', 'TEMPLATE']),
             or(eq(Spaces.state, 'ACTIVE'), isNull(Spaces.id)),
           ),
         );
@@ -1653,7 +1682,9 @@ builder.mutationFields((t) => ({
         .select({ userId: Posts.userId, space: { id: Spaces.id } })
         .from(Posts)
         .innerJoin(Spaces, eq(Spaces.id, Posts.spaceId))
-        .where(and(eq(Posts.id, input.postId), eq(Posts.state, 'PUBLISHED'), eq(Spaces.state, 'ACTIVE')));
+        .where(
+          and(eq(Posts.id, input.postId), inArray(Posts.state, ['PUBLISHED', 'TEMPLATE']), eq(Spaces.state, 'ACTIVE')),
+        );
 
       if (posts.length === 0) {
         throw new NotFoundError();
@@ -1699,7 +1730,9 @@ builder.mutationFields((t) => ({
         .select({ userId: Posts.userId, space: { id: Spaces.id } })
         .from(Posts)
         .innerJoin(Spaces, eq(Spaces.id, Posts.spaceId))
-        .where(and(eq(Posts.id, input.postId), eq(Posts.state, 'PUBLISHED'), eq(Spaces.state, 'ACTIVE')));
+        .where(
+          and(eq(Posts.id, input.postId), inArray(Posts.state, ['PUBLISHED', 'TEMPLATE']), eq(Spaces.state, 'ACTIVE')),
+        );
 
       if (posts.length === 0) {
         throw new NotFoundError();
