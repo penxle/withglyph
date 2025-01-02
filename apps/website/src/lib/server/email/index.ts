@@ -1,5 +1,5 @@
 import { SendEmailCommand } from '@aws-sdk/client-ses';
-import { aws } from '../external-api';
+import * as aws from '../external-api/aws';
 import type { ComponentProps, ComponentType, SvelteComponent } from 'svelte';
 
 type SendEmailParams<T extends SvelteComponent> = {
