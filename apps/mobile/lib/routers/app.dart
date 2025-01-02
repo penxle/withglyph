@@ -72,13 +72,6 @@ class AppRouter extends RootStackRouter {
             AutoRoute(page: OnboardingCurationRoute.page, fullscreenDialog: true),
             AutoRoute(page: OssLicensesDetailsRoute.page),
             AutoRoute(page: OssLicensesRoute.page),
-            AutoRoute(
-              page: PointRoute.page,
-              children: [
-                AutoRoute(page: PointHistoryRoute.page),
-                AutoRoute(page: PointPurchaseRoute.page),
-              ],
-            ),
             AutoRoute(page: ProfileRoute.page),
             AutoRoute(page: RedeemRoute.page),
             AutoRoute(page: SearchResultRoute.page),

@@ -5,14 +5,12 @@ import 'package:gap/gap.dart';
 import 'package:glyph/components/btn.dart';
 import 'package:glyph/components/horizontal_divider.dart';
 import 'package:glyph/context/bottom_sheet.dart';
-import 'package:glyph/extensions/build_context.dart';
 import 'package:glyph/extensions/int.dart';
 import 'package:glyph/ferry/widget.dart';
 import 'package:glyph/graphql/__generated__/prosemirror_widget_access_barrier_purchase_post_mutation.req.gql.dart';
 import 'package:glyph/graphql/__generated__/prosemirror_widget_access_barrier_query.req.gql.dart';
 import 'package:glyph/icons/tabler.dart';
 import 'package:glyph/prosemirror/schema.dart';
-import 'package:glyph/routers/app.gr.dart';
 import 'package:glyph/themes/colors.dart';
 import 'package:jiffy/jiffy.dart';
 
@@ -302,13 +300,6 @@ class _ProseMirrorWidgetAccessBarrierState extends State<ProseMirrorWidgetAccess
                                           ],
                                         ),
                                       ),
-                                    ),
-                                    const Gap(24),
-                                    Btn(
-                                      '충전하기',
-                                      onPressed: () async {
-                                        await context.popWaitAndPush(const PointPurchaseRoute());
-                                      },
                                     ),
                                   ],
                                 ],

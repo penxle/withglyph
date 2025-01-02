@@ -304,9 +304,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                           ),
                         ),
                       ),
-                      onPressed: () async {
-                        await context.router.push(const PointRoute());
-                      },
+                      onPressed: () {},
                     ),
                     _MenuItem(
                       icon: Tabler.pig_money,

@@ -1,6 +1,0 @@
-mutation PurchasePointScreen_InAppPurchasePoint_Mutation($input: InAppPurchasePointInput!) {
-  inAppPurchasePoint(input: $input) {
-    id
-    pointAmount
-  }
-}

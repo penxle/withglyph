@@ -509,29 +509,25 @@
         </p>
 
         <svelte:fragment slot="action">
-          {#if $query.me.point < node.attrs.price}
-            <Button style={css.raw({ width: 'full' })} href="/point/purchase" size="lg" type="link">충전하기</Button>
-          {:else}
-            <Button
-              style={css.raw({ width: 'full' })}
-              size="lg"
-              on:click={async () => {
-                await purchasePost({
-                  postId: $query?.post.id ?? '',
-                  revisionId,
-                });
+          <Button
+            style={css.raw({ width: 'full' })}
+            size="lg"
+            on:click={async () => {
+              await purchasePost({
+                postId: $query?.post.id ?? '',
+                revisionId,
+              });
 
-                analytics.track('post:purchase', {
-                  postId: $query?.post.id,
-                  price: node.attrs.price,
-                });
+              analytics.track('post:purchase', {
+                postId: $query?.post.id,
+                price: node.attrs.price,
+              });
 
-                postPurchaseOpen = false;
-              }}
-            >
-              구매하기
-            </Button>
-          {/if}
+              postPurchaseOpen = false;
+            }}
+          >
+            구매하기
+          </Button>
         </svelte:fragment>
       </Modal>
     {:else}

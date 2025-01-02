@@ -1,7 +1,0 @@
-mutation PurchasePointScreen_PurchasePoint_Mutation($input: PurchasePointInput!) {
-  purchasePoint(input: $input) {
-    id
-    pointAmount
-    paymentData
-  }
-}

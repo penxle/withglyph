@@ -1,6 +1,5 @@
 <script lang="ts">
   import { graphql } from '$glitch';
-  import { Button } from '$lib/components';
   import { TabHead, TabHeadItem } from '$lib/components/tab';
   import { comma } from '$lib/utils';
   import { css } from '$styled-system/css';
@@ -40,10 +39,6 @@
           {comma($query.me.point)}P
         </p>
       </div>
-
-      <Button style={css.raw({ width: '90px' })} href="/point/purchase" size="sm" type="link" variant="gradation-fill">
-        충전
-      </Button>
     </div>
 
     <hr class={css({ border: 'none', marginY: '14px', height: '1px', backgroundColor: 'gray.150' })} />
