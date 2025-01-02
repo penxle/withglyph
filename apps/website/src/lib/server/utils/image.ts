@@ -17,6 +17,9 @@ const PretendardLight = await got('https://glyph.pub/assets/fonts/Pretendard-Lig
 const PretendardRegular = await got('https://glyph.pub/assets/fonts/Pretendard-Regular.otf').buffer();
 const RIDIBatang = await got('https://glyph.pub/assets/fonts/RIDIBatang.otf').buffer();
 
+const KoPubWorldDotumLight = await got('https://glyph.pub/assets/fonts/KoPubWorldDotumLight.otf').buffer();
+const KoPubWorldBatangMedium = await got('https://glyph.pub/assets/fonts/KoPubWorldBatangMedium.otf').buffer();
+
 export const finalizeImage = async (source: ImageSource, bounds?: ImageBounds) => {
   let image = sharp(source, { failOn: 'none', animated: true });
   let singleImage = sharp(source, { failOn: 'none' });
@@ -176,6 +179,8 @@ export const generatePostShareImage = async ({
 }: GeneratePostFragmentImageParams) => {
   const logoUrl = `data:image/svg+xml,${encodeURIComponent(fullLogoRaw)}`.replace('currentColor', color);
 
+  const isSansSerif = font === 'Pretendard';
+
   const svg = await satori(
     {
       type: 'div',
@@ -187,7 +192,7 @@ export const generatePostShareImage = async ({
               children: body,
               style: {
                 display: 'block',
-                fontFamily: font,
+                fontFamily: `${font}, ${isSansSerif ? 'KoPubWorldDotum' : 'KoPubWorldBatang'}`,
                 fontSize: size === 'small' ? '14px' : size === 'medium' ? '16px' : '18px',
                 // lineHeight: font === 'RIDIBatang' ? '2.215' : '1.875', // 30px for Pretendard, 34px for RIDIBatang
                 lineHeight: font === 'RIDIBatang' ? '34px' : '30px', // 30px for Pretendard, 34px for RIDIBatang
@@ -273,6 +278,8 @@ export const generatePostShareImage = async ({
         { name: 'Pretendard', data: PretendardLight, weight: 300, style: 'normal' },
         { name: 'Pretendard', data: PretendardRegular, weight: 400, style: 'normal' },
         { name: 'RIDIBatang', data: RIDIBatang, weight: 400, style: 'normal' },
+        { name: 'KoPubWorldDotum', data: KoPubWorldDotumLight, weight: 400, style: 'normal' },
+        { name: 'KoPubWorldBatang', data: KoPubWorldBatangMedium, weight: 400, style: 'normal' },
       ],
       loadAdditionalAsset: async (code, segment) => {
         if (code === 'emoji') {
