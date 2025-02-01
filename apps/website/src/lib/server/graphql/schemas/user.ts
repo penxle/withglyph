@@ -62,16 +62,13 @@ import { LoginUser, UpdateUserEmail } from '$lib/server/email/templates';
 import { apple, coocon, google, naver, portone, twitter } from '$lib/server/external-api';
 import {
   createAccessToken,
-  createRandomAvatar,
   decryptAES,
-  directUploadImage,
   encryptAES,
   getAllowedAgeRating,
   getUserPoint,
   getUserRevenue,
   useFirstRow,
 } from '$lib/server/utils';
-import { generateRandomName } from '$lib/utils';
 import {
   CreateUserSchema,
   DeleteUserSchema,
@@ -1057,86 +1054,88 @@ builder.mutationFields((t) => ({
   createUser: t.field({
     type: CreateUserResult,
     args: { input: t.arg({ type: CreateUserInput }) },
-    resolve: async (_, { input }, context) => {
-      const provisionedUsers = await database
-        .select({
-          id: ProvisionedUsers.id,
-          email: ProvisionedUsers.email,
-          token: ProvisionedUsers.token,
-          provider: ProvisionedUsers.provider,
-          principal: ProvisionedUsers.principal,
-        })
-        .from(ProvisionedUsers)
-        .where(eq(ProvisionedUsers.token, input.token));
+    resolve: async () => {
+      throw new IntentionalError('지금은 회원가입을 할 수 없어요');
 
-      if (provisionedUsers.length === 0) {
-        throw new IntentionalError('올바르지 않은 토큰이에요.');
-      }
+      // const provisionedUsers = await database
+      //   .select({
+      //     id: ProvisionedUsers.id,
+      //     email: ProvisionedUsers.email,
+      //     token: ProvisionedUsers.token,
+      //     provider: ProvisionedUsers.provider,
+      //     principal: ProvisionedUsers.principal,
+      //   })
+      //   .from(ProvisionedUsers)
+      //   .where(eq(ProvisionedUsers.token, input.token));
 
-      const [provisionedUser] = provisionedUsers;
+      // if (provisionedUsers.length === 0) {
+      //   throw new IntentionalError('올바르지 않은 토큰이에요.');
+      // }
 
-      const emailUsages = await database
-        .select({ id: Users.id })
-        .from(Users)
-        .where(and(eq(Users.email, provisionedUser.email.toLowerCase()), eq(Users.state, 'ACTIVE')));
+      // const [provisionedUser] = provisionedUsers;
 
-      if (emailUsages.length > 0) {
-        throw new IntentionalError('이미 가입된 이메일이에요.');
-      }
+      // const emailUsages = await database
+      //   .select({ id: Users.id })
+      //   .from(Users)
+      //   .where(and(eq(Users.email, provisionedUser.email.toLowerCase()), eq(Users.state, 'ACTIVE')));
 
-      const avatarId = await directUploadImage({
-        name: 'avatar',
-        source: await createRandomAvatar(),
-      });
+      // if (emailUsages.length > 0) {
+      //   throw new IntentionalError('이미 가입된 이메일이에요.');
+      // }
 
-      return await database.transaction(async (tx) => {
-        const [profile] = await tx
-          .insert(Profiles)
-          .values({
-            name: input.name ?? generateRandomName(provisionedUser.id + provisionedUser.email),
-            avatarId,
-          })
-          .returning({ id: Profiles.id });
+      // const avatarId = await directUploadImage({
+      //   name: 'avatar',
+      //   source: await createRandomAvatar(),
+      // });
 
-        const [user] = await tx
-          .insert(Users)
-          .values({
-            email: provisionedUser.email,
-            profileId: profile.id,
-            role: 'USER',
-            state: 'ACTIVE',
-          })
-          .returning({ id: Users.id });
+      // return await database.transaction(async (tx) => {
+      //   const [profile] = await tx
+      //     .insert(Profiles)
+      //     .values({
+      //       name: input.name ?? generateRandomName(provisionedUser.id + provisionedUser.email),
+      //       avatarId,
+      //     })
+      //     .returning({ id: Profiles.id });
 
-        await tx.update(Images).set({ userId: user.id }).where(eq(Images.id, avatarId));
+      //   const [user] = await tx
+      //     .insert(Users)
+      //     .values({
+      //       email: provisionedUser.email,
+      //       profileId: profile.id,
+      //       role: 'USER',
+      //       state: 'ACTIVE',
+      //     })
+      //     .returning({ id: Users.id });
 
-        if (input.marketingConsent) {
-          await tx.insert(UserMarketingConsents).values({ userId: user.id });
-        }
+      //   await tx.update(Images).set({ userId: user.id }).where(eq(Images.id, avatarId));
 
-        if (provisionedUser.provider && provisionedUser.principal) {
-          await tx.insert(UserSingleSignOns).values({
-            userId: user.id,
-            provider: provisionedUser.provider,
-            principal: provisionedUser.principal,
-            email: provisionedUser.email.toLowerCase(),
-          });
-        }
+      //   if (input.marketingConsent) {
+      //     await tx.insert(UserMarketingConsents).values({ userId: user.id });
+      //   }
 
-        await tx.delete(ProvisionedUsers).where(eq(ProvisionedUsers.id, provisionedUser.id));
+      //   if (provisionedUser.provider && provisionedUser.principal) {
+      //     await tx.insert(UserSingleSignOns).values({
+      //       userId: user.id,
+      //       provider: provisionedUser.provider,
+      //       principal: provisionedUser.principal,
+      //       email: provisionedUser.email.toLowerCase(),
+      //     });
+      //   }
 
-        const [session] = await tx.insert(UserSessions).values({ userId: user.id }).returning({ id: UserSessions.id });
+      //   await tx.delete(ProvisionedUsers).where(eq(ProvisionedUsers.id, provisionedUser.id));
 
-        const accessToken = await createAccessToken(session.id);
-        context.event.cookies.set('glyph-at', accessToken, {
-          path: '/',
-          maxAge: dayjs.duration(1, 'year').asSeconds(),
-        });
+      //   const [session] = await tx.insert(UserSessions).values({ userId: user.id }).returning({ id: UserSessions.id });
 
-        return {
-          token: accessToken,
-        };
-      });
+      //   const accessToken = await createAccessToken(session.id);
+      //   context.event.cookies.set('glyph-at', accessToken, {
+      //     path: '/',
+      //     maxAge: dayjs.duration(1, 'year').asSeconds(),
+      //   });
+
+      //   return {
+      //     token: accessToken,
+      //   };
+      // });
     },
   }),
 
