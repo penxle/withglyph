@@ -31,7 +31,7 @@ export const Document = Node.create({
       },
 
       documentParagraphSpacing: {
-        default: 1,
+        default: 0,
         renderHTML: ({ documentParagraphSpacing }) => ({
           style: `--document-paragraph-spacing: ${documentParagraphSpacing}rem`,
         }),
