@@ -34,16 +34,17 @@
     "lint:typecheck": "tsc"
   },
   "dependencies": {
-    "@pnpm/find-workspace-dir": "^7.0.1",
-    "svelte": "^4.2.18",
+    "@pnpm/find-workspace-dir": "^7.0.2",
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "svelte": "^4.2.19",
     "svgo": "^3.3.2",
-    "vite": "^5.3.4"
+    "vite": "^5.4.10"
   },
   "devDependencies": {
-    "@sveltejs/kit": "^2.5.18",
+    "@sveltejs/kit": "^2.7.4",
     "@withglyph/tsconfig": "workspace:^",
-    "tsup": "^8.1.2",
-    "typescript": "^5.5.3"
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0"

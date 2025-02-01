@@ -29,15 +29,15 @@
     "lint:typecheck": "tsc"
   },
   "dependencies": {
-    "@pulumi/aws": "^6.45.0",
-    "@pulumi/kubernetes": "^4.15.0",
-    "@pulumi/pulumi": "^3.124.0",
+    "@pulumi/aws": "^6.57.0",
+    "@pulumi/kubernetes": "^4.18.3",
+    "@pulumi/pulumi": "^3.137.0",
     "fast-glob": "^3.3.2",
-    "ts-pattern": "^5.2.0"
+    "ts-pattern": "^5.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.11",
+    "@types/node": "^22.8.7",
     "@withglyph/tsconfig": "workspace:^",
-    "tsup": "^8.1.2"
+    "tsup": "^8.3.5"
   }
 }

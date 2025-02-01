@@ -627,7 +627,7 @@
             </div>
           </div>
         {:else}
-          <!-- eslint-disable-next-line svelte/valid-compile -->
+          <!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
           <!-- svelte-ignore a11y-label-has-associated-control -->
           <label
             class={flex({
@@ -803,7 +803,7 @@
       <section class={tabContentStyle} hidden={tabIndex !== 4}>
         <Switch
           style={flex.raw({ justify: 'space-between', align: 'center' })}
-          checked={$data.commentQualification !== 'NONE' ?? true}
+          checked={$data.commentQualification !== 'NONE'}
           on:change={(e) => {
             $data.commentQualification = e.currentTarget.checked ? 'ANY' : 'NONE';
           }}

@@ -8,7 +8,7 @@ import type {
   NodeViewRendererProps,
 } from '@tiptap/core';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
-import type { NodeView as ProseMirrorNodeView } from '@tiptap/pm/view';
+import type { Decoration, DecorationSource, NodeView as ProseMirrorNodeView } from '@tiptap/pm/view';
 import type { ComponentType, SvelteComponent } from 'svelte';
 
 export type NodeViewProps = Omit<TiptapNodeViewProps, 'updateAttributes'> & {
@@ -60,8 +60,11 @@ class SvelteNodeView extends NodeView<NodeViewComponentType> implements ProseMir
       target,
       props: {
         editor: this.editor,
+        view: this.view,
         node: this.node,
-        decorations: this.decorations,
+        decorations: this.decorations as DecorationWithType[],
+        innerDecorations: this.innerDecorations,
+        HTMLAttributes: this.HTMLAttributes,
         extension: this.extension,
         selected: false,
 
@@ -128,16 +131,20 @@ class SvelteNodeView extends NodeView<NodeViewComponentType> implements ProseMir
     return this.#contentElement;
   }
 
-  // @ts-expect-error type mismatch
-  update(node: ProseMirrorNode, decorations: DecorationWithType[]) {
+  update(node: ProseMirrorNode, decorations: readonly Decoration[], innerDecorations: DecorationSource) {
     if (node.type !== this.node.type) {
       return false;
     }
 
     this.node = node;
-    this.decorations = decorations;
+    this.decorations = decorations as DecorationWithType[];
+    this.innerDecorations = innerDecorations;
 
-    this.#component.$set({ node, decorations });
+    this.#component.$set({
+      node,
+      decorations: decorations as DecorationWithType[],
+      innerDecorations,
+    });
 
     return true;
   }

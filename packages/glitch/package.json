@@ -37,14 +37,15 @@
   },
   "dependencies": {
     "@graphql-codegen/core": "^4.0.2",
-    "@graphql-codegen/typed-document-node": "^5.0.9",
-    "@graphql-codegen/typescript": "^4.0.9",
-    "@graphql-codegen/typescript-operations": "^4.2.3",
+    "@graphql-codegen/typed-document-node": "^5.0.11",
+    "@graphql-codegen/typescript": "^4.1.1",
+    "@graphql-codegen/typescript-operations": "^4.3.1",
     "@graphql-codegen/typescript-urql-graphcache": "^3.1.0",
     "@graphql-typed-document-node/core": "^3.2.0",
-    "@urql/core": "^5.0.4",
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "@urql/core": "^5.0.8",
     "@urql/devtools": "^2.0.3",
-    "@urql/exchange-graphcache": "^6.5.1",
+    "@urql/exchange-graphcache": "^7.2.1",
     "dataloader": "^2.2.2",
     "fast-glob": "^3.3.2",
     "graphql": "^16.9.0",
@@ -52,16 +53,16 @@
     "graphql-tag": "^2.12.6",
     "radash": "^12.1.0",
     "recast": "^0.23.9",
-    "svelte": "^4.2.18",
+    "svelte": "^4.2.19",
     "wonka": "^6.3.4"
   },
   "devDependencies": {
-    "@sveltejs/kit": "^2.5.18",
+    "@sveltejs/kit": "^2.7.4",
     "@withglyph/tsconfig": "workspace:^",
-    "rollup": "^4.18.1",
-    "tsup": "^8.1.2",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.4"
+    "rollup": "^4.24.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^2.0.0"
