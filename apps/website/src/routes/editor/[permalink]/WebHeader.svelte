@@ -7,6 +7,7 @@
   import IconRuby from '~icons/glyph/ruby';
   import IconArrowBackUp from '~icons/tabler/arrow-back-up';
   import IconArrowForwardUp from '~icons/tabler/arrow-forward-up';
+  import IconArrowLeft from '~icons/tabler/arrow-left';
   import IconBug from '~icons/tabler/bug';
   import IconChevronLeft from '~icons/tabler/chevron-left';
   import IconClipboard from '~icons/tabler/clipboard';
@@ -91,6 +92,8 @@
 
   let debugModalOpen = false;
 
+  let isTemplate = true;
+
   const { anchor: publishAnchor, floating: publishFloating } = createFloatingActions({
     placement: 'bottom-end',
     offset: 13,
@@ -147,19 +150,27 @@
       height: { base: '56px', sm: '62px' },
     })}
   >
-    <a class={flex({ align: 'center', gap: '8px' })} href="/">
-      <FullLogo
-        class={css({
-          marginTop: '20px',
-          marginBottom: '17px',
-          color: 'gray.900',
-          height: '25px',
-          hideBelow: 'sm',
-        })}
-      />
-      <Icon style={css.raw({ hideFrom: 'sm' })} icon={IconChevronLeft} size={24} />
-    </a>
-
+    {#if isTemplate}
+      <div class={flex({ align: 'center', gap: '8px' })}>
+        <a href="/me/templates">
+          <Icon icon={IconArrowLeft} size={24} />
+        </a>
+        <p class={css({ fontSize: '20px', fontWeight: 'bold' })}>템플릿 만들기</p>
+      </div>
+    {:else}
+      <a class={flex({ align: 'center', gap: '8px' })} href="/">
+        <FullLogo
+          class={css({
+            marginTop: '20px',
+            marginBottom: '17px',
+            color: 'gray.900',
+            height: '25px',
+            hideBelow: 'sm',
+          })}
+        />
+        <Icon style={css.raw({ hideFrom: 'sm' })} icon={IconChevronLeft} size={24} />
+      </a>
+    {/if}
     <div class={flex({ flex: '1', justify: 'flex-end', align: 'flex-end' })}>
       {#if $state.timeTravel}
         <div class={flex({ gap: '10px' })} role="group">
@@ -200,48 +211,59 @@
         </div>
 
         <div class={flex({ gap: '10px' })} role="group">
-          <Button
-            style={flex.raw({ alignItems: 'center', padding: '0!', backgroundColor: 'transparent!' })}
-            role="presentation"
-            size="sm"
-            tabindex={-1}
-            type="link"
-            variant="gray-outline"
-          >
-            <button
-              class={css({
-                paddingLeft: '12px',
-                paddingRight: '8px',
-                paddingY: '9px',
-                backgroundColor: { _hover: 'gray.100', _focusVisible: 'gray.100' },
-              })}
-              disabled={false}
-              type="button"
+          {#if isTemplate}
+            <Button
+              style={css.raw({ width: '68px' })}
+              size="sm"
+              variant="gray-outline"
               on:click={() => forceSynchronize()}
             >
               저장
-            </button>
-            <hr class={css({ width: '1px', height: '8px', backgroundColor: 'gray.300' })} />
-            <button
-              class={css({
-                paddingLeft: '8px',
-                paddingRight: '12px',
-                paddingY: '9px',
-                fontWeight: 'bold',
-                color: 'gray.400',
-                backgroundColor: { _hover: 'gray.100', _focusVisible: 'gray.100' },
-              })}
-              disabled={$query.me.posts.length === 0}
-              type="button"
-              on:click={() => (draftListOpen = true)}
+            </Button>
+          {:else}
+            <Button
+              style={flex.raw({ alignItems: 'center', padding: '0!', backgroundColor: 'transparent!' })}
+              role="presentation"
+              size="sm"
+              tabindex={-1}
+              type="link"
+              variant="gray-outline"
             >
-              {$query.me.posts?.length ?? 0}
-            </button>
-          </Button>
+              <button
+                class={css({
+                  paddingLeft: '12px',
+                  paddingRight: '8px',
+                  paddingY: '9px',
+                  backgroundColor: { _hover: 'gray.100', _focusVisible: 'gray.100' },
+                })}
+                disabled={false}
+                type="button"
+                on:click={() => forceSynchronize()}
+              >
+                저장
+              </button>
+              <hr class={css({ width: '1px', height: '8px', backgroundColor: 'gray.300' })} />
+              <button
+                class={css({
+                  paddingLeft: '8px',
+                  paddingRight: '12px',
+                  paddingY: '9px',
+                  fontWeight: 'bold',
+                  color: 'gray.400',
+                  backgroundColor: { _hover: 'gray.100', _focusVisible: 'gray.100' },
+                })}
+                disabled={$query.me.posts.length === 0}
+                type="button"
+                on:click={() => (draftListOpen = true)}
+              >
+                {$query.me.posts?.length ?? 0}
+              </button>
+            </Button>
+          {/if}
 
           <div class={css({ width: 'fit' })} use:publishAnchor>
             <Button
-              style={css.raw({ width: '68px' })}
+              style={css.raw({ width: '68px' }, isTemplate && { width: 'fit' })}
               aria-pressed={publishMenuOpen}
               size="sm"
               on:click={() => {
@@ -249,7 +271,7 @@
                 forceSynchronize();
               }}
             >
-              발행
+              {isTemplate ? '발행 옵션 설정' : '발행'}
             </Button>
           </div>
         </div>
