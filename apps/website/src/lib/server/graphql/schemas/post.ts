@@ -1,13 +1,10 @@
-import { init as cuid } from '@paralleldrive/cuid2';
 import * as Sentry from '@sentry/sveltekit';
-import { hash, verify } from 'argon2';
+import { verify } from 'argon2';
 import dayjs from 'dayjs';
 import { and, asc, count, desc, eq, exists, gt, gte, isNotNull, isNull, lt, ne, notExists, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { pipe, Repeater } from 'graphql-yoga';
 import { fromUint8Array, toUint8Array } from 'js-base64';
-import { match, P } from 'ts-pattern';
-import { prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror';
 import * as Y from 'yjs';
 import { emojiData } from '$lib/emoji';
 import {
@@ -62,13 +59,12 @@ import {
   getPostContentState,
   getPostViewCount,
   getSpaceMember,
-  makePostContentId,
   makeQueryContainers,
   searchResultToIds,
   useFirstRow,
   useFirstRowOrThrow,
 } from '$lib/server/utils';
-import { base36To10, createEmptyTiptapDocumentNode } from '$lib/utils';
+import { base36To10 } from '$lib/utils';
 import { PublishPostInputSchema } from '$lib/validations/post';
 import { builder } from '../builder';
 import { pubsub } from '../pubsub';
@@ -1369,279 +1365,283 @@ builder.mutationFields((t) => ({
   createPost: t.withAuth({ user: true }).field({
     type: Post,
     args: { input: t.arg({ type: CreatePostInput }) },
-    resolve: async (_, { input }, context) => {
-      let permalink;
+    resolve: async () => {
+      throw new IntentionalError('지금은 포스트를 만들 수 없어요');
 
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        permalink = base36To10(cuid({ length: 6 })());
+      // let permalink;
 
-        const posts = await database.select({ id: Posts.id }).from(Posts).where(eq(Posts.permalink, permalink));
-        if (posts.length === 0) {
-          break;
-        }
-      }
+      // // eslint-disable-next-line no-constant-condition
+      // while (true) {
+      //   permalink = base36To10(cuid({ length: 6 })());
 
-      if (input.collectionId) {
-        const collection = await database
-          .select({ id: SpaceCollections.id, spaceId: SpaceCollections.spaceId })
-          .from(SpaceCollections)
-          .where(eq(SpaceCollections.id, input.collectionId))
-          .then(useFirstRowOrThrow(new NotFoundError()));
+      //   const posts = await database.select({ id: Posts.id }).from(Posts).where(eq(Posts.permalink, permalink));
+      //   if (posts.length === 0) {
+      //     break;
+      //   }
+      // }
 
-        if (input.spaceId) {
-          if (collection.spaceId !== input.spaceId) {
-            throw new PermissionDeniedError();
-          }
-        } else {
-          input.spaceId = collection.spaceId;
-        }
-      }
-      if (input.spaceId) {
-        await database
-          .select({ id: Spaces.id })
-          .from(Spaces)
-          .innerJoin(SpaceMembers, eq(SpaceMembers.spaceId, Spaces.id))
-          .where(
-            and(
-              eq(Spaces.id, input.spaceId),
-              eq(SpaceMembers.userId, context.session.userId),
-              eq(SpaceMembers.state, 'ACTIVE'),
-            ),
-          )
-          .then(useFirstRowOrThrow(new PermissionDeniedError()));
-      }
+      // if (input.collectionId) {
+      //   const collection = await database
+      //     .select({ id: SpaceCollections.id, spaceId: SpaceCollections.spaceId })
+      //     .from(SpaceCollections)
+      //     .where(eq(SpaceCollections.id, input.collectionId))
+      //     .then(useFirstRowOrThrow(new NotFoundError()));
 
-      return await database.transaction(async (tx) => {
-        const [post] = await tx
-          .insert(Posts)
-          .values({
-            permalink,
-            userId: context.session.userId,
-            spaceId: input.spaceId,
-            state: 'EPHEMERAL',
-            visibility: 'PUBLIC',
-            discloseStats: true,
-            receiveFeedback: true,
-            receivePatronage: true,
-            receiveTagContribution: true,
-            protectContent: true,
-          })
-          .returning({ id: Posts.id });
+      //   if (input.spaceId) {
+      //     if (collection.spaceId !== input.spaceId) {
+      //       throw new PermissionDeniedError();
+      //     }
+      //   } else {
+      //     input.spaceId = collection.spaceId;
+      //   }
+      // }
+      // if (input.spaceId) {
+      //   await database
+      //     .select({ id: Spaces.id })
+      //     .from(Spaces)
+      //     .innerJoin(SpaceMembers, eq(SpaceMembers.spaceId, Spaces.id))
+      //     .where(
+      //       and(
+      //         eq(Spaces.id, input.spaceId),
+      //         eq(SpaceMembers.userId, context.session.userId),
+      //         eq(SpaceMembers.state, 'ACTIVE'),
+      //       ),
+      //     )
+      //     .then(useFirstRowOrThrow(new PermissionDeniedError()));
+      // }
 
-        const node = createEmptyTiptapDocumentNode();
-        const doc = prosemirrorToYDoc(node, 'content');
-        const update = Y.encodeStateAsUpdateV2(doc);
-        const vector = Y.encodeStateVector(doc);
-        const snapshot = Y.encodeSnapshotV2(Y.snapshot(doc));
+      // return await database.transaction(async (tx) => {
+      //   const [post] = await tx
+      //     .insert(Posts)
+      //     .values({
+      //       permalink,
+      //       userId: context.session.userId,
+      //       spaceId: input.spaceId,
+      //       state: 'EPHEMERAL',
+      //       visibility: 'PUBLIC',
+      //       discloseStats: true,
+      //       receiveFeedback: true,
+      //       receivePatronage: true,
+      //       receiveTagContribution: true,
+      //       protectContent: true,
+      //     })
+      //     .returning({ id: Posts.id });
 
-        await tx.insert(PostContentStates).values({
-          postId: post.id,
-          update,
-          vector,
-          upToSeq: 0n,
-          content: node.toJSON(),
-          text: '',
-          characters: 0,
-          images: 0,
-          files: 0,
-        });
+      //   const node = createEmptyTiptapDocumentNode();
+      //   const doc = prosemirrorToYDoc(node, 'content');
+      //   const update = Y.encodeStateAsUpdateV2(doc);
+      //   const vector = Y.encodeStateVector(doc);
+      //   const snapshot = Y.encodeSnapshotV2(Y.snapshot(doc));
 
-        await tx.insert(PostContentSnapshots).values({
-          postId: post.id,
-          data: snapshot,
-        });
+      //   await tx.insert(PostContentStates).values({
+      //     postId: post.id,
+      //     update,
+      //     vector,
+      //     upToSeq: 0n,
+      //     content: node.toJSON(),
+      //     text: '',
+      //     characters: 0,
+      //     images: 0,
+      //     files: 0,
+      //   });
 
-        if (input.collectionId) {
-          await tx.insert(SpaceCollectionPosts).values({
-            collectionId: input.collectionId,
-            postId: post.id,
-            order: 2_147_483_647,
-          });
+      //   await tx.insert(PostContentSnapshots).values({
+      //     postId: post.id,
+      //     data: snapshot,
+      //   });
 
-          await defragmentSpaceCollectionPosts(tx, input.collectionId);
-        }
+      //   if (input.collectionId) {
+      //     await tx.insert(SpaceCollectionPosts).values({
+      //       collectionId: input.collectionId,
+      //       postId: post.id,
+      //       order: 2_147_483_647,
+      //     });
 
-        return post.id;
-      });
+      //     await defragmentSpaceCollectionPosts(tx, input.collectionId);
+      //   }
+
+      //   return post.id;
+      // });
     },
   }),
 
   publishPost: t.withAuth({ user: true }).field({
     type: Post,
     args: { input: t.arg({ type: PublishPostInput }) },
-    resolve: async (_, { input }, context) => {
-      const posts = await database
-        .select({
-          userId: Posts.userId,
-          state: Posts.state,
-          spaceId: Posts.spaceId,
-          collectionPost: { id: SpaceCollectionPosts.id, collectionId: SpaceCollectionPosts.collectionId },
-        })
-        .from(Posts)
-        .leftJoin(Spaces, eq(Spaces.id, Posts.spaceId))
-        .leftJoin(SpaceCollectionPosts, eq(SpaceCollectionPosts.postId, Posts.id))
-        .where(
-          and(
-            eq(Posts.id, input.postId),
-            ne(Posts.state, 'DELETED'),
-            or(eq(Spaces.state, 'ACTIVE'), isNull(Spaces.id)),
-          ),
-        );
+    resolve: async () => {
+      throw new IntentionalError('지금은 포스트를 발행할 수 없어요');
 
-      if (posts.length === 0) {
-        throw new NotFoundError();
-      }
+      // const posts = await database
+      //   .select({
+      //     userId: Posts.userId,
+      //     state: Posts.state,
+      //     spaceId: Posts.spaceId,
+      //     collectionPost: { id: SpaceCollectionPosts.id, collectionId: SpaceCollectionPosts.collectionId },
+      //   })
+      //   .from(Posts)
+      //   .leftJoin(Spaces, eq(Spaces.id, Posts.spaceId))
+      //   .leftJoin(SpaceCollectionPosts, eq(SpaceCollectionPosts.postId, Posts.id))
+      //   .where(
+      //     and(
+      //       eq(Posts.id, input.postId),
+      //       ne(Posts.state, 'DELETED'),
+      //       or(eq(Spaces.state, 'ACTIVE'), isNull(Spaces.id)),
+      //     ),
+      //   );
 
-      const [post] = posts;
+      // if (posts.length === 0) {
+      //   throw new NotFoundError();
+      // }
 
-      if (post.state === 'PUBLISHED' && post.spaceId !== input.spaceId) {
-        throw new IntentionalError('발행된 포스트의 스페이스를 변경할 수 없어요');
-      }
+      // const [post] = posts;
 
-      const meAsMember = await getSpaceMember(context, input.spaceId);
-      if (!meAsMember) {
-        throw new PermissionDeniedError();
-      }
+      // if (post.state === 'PUBLISHED' && post.spaceId !== input.spaceId) {
+      //   throw new IntentionalError('발행된 포스트의 스페이스를 변경할 수 없어요');
+      // }
 
-      if (!(await checkAgeRatingAllowed(context.session.userId, input.ageRating, context))) {
-        throw new IntentionalError('본인인증을 하지 않으면 연령 제한 컨텐츠를 게시할 수 없어요');
-      }
+      // const meAsMember = await getSpaceMember(context, input.spaceId);
+      // if (!meAsMember) {
+      //   throw new PermissionDeniedError();
+      // }
 
-      const state = await getPostContentState(input.postId);
+      // if (!(await checkAgeRatingAllowed(context.session.userId, input.ageRating, context))) {
+      //   throw new IntentionalError('본인인증을 하지 않으면 연령 제한 컨텐츠를 게시할 수 없어요');
+      // }
 
-      const doc = new Y.Doc();
-      Y.applyUpdateV2(doc, state.update);
+      // const state = await getPostContentState(input.postId);
 
-      const title = doc.getText('title').toString();
-      const subtitle = doc.getText('subtitle').toString();
-      const content = yDocToProsemirrorJSON(doc, 'content') as JSONContent;
+      // const doc = new Y.Doc();
+      // Y.applyUpdateV2(doc, state.update);
 
-      const documentNode = content.content?.[0];
-      if (!documentNode || documentNode.type !== 'document') {
-        throw new Error('invalid document');
-      }
+      // const title = doc.getText('title').toString();
+      // const subtitle = doc.getText('subtitle').toString();
+      // const content = yDocToProsemirrorJSON(doc, 'content') as JSONContent;
 
-      const nodes = documentNode.content;
-      if (!nodes || nodes.length === 0) {
-        throw new Error('invalid document');
-      }
+      // const documentNode = content.content?.[0];
+      // if (!documentNode || documentNode.type !== 'document') {
+      //   throw new Error('invalid document');
+      // }
 
-      const attributes = documentNode.attrs ?? {};
+      // const nodes = documentNode.content;
+      // if (!nodes || nodes.length === 0) {
+      //   throw new Error('invalid document');
+      // }
 
-      const accessBarrierPosition = nodes.findIndex((node) => node.type === 'access_barrier');
-      const accessBarrier = nodes[accessBarrierPosition];
+      // const attributes = documentNode.attrs ?? {};
 
-      const freeNodes = nodes.slice(0, accessBarrierPosition);
-      const paidNodes = nodes.slice(accessBarrierPosition + 1);
+      // const accessBarrierPosition = nodes.findIndex((node) => node.type === 'access_barrier');
+      // const accessBarrier = nodes[accessBarrierPosition];
 
-      let price: number | null = null;
-      if (paidNodes.length > 0) {
-        price = accessBarrier.attrs?.price ?? null;
+      // const freeNodes = nodes.slice(0, accessBarrierPosition);
+      // const paidNodes = nodes.slice(accessBarrierPosition + 1);
 
-        if (price === null) {
-          throw new IntentionalError('가격을 설정해주세요');
-        } else {
-          if (price <= 0 || price > 1_000_000 || price % 100 !== 0) {
-            throw new IntentionalError('잘못된 가격이에요');
-          }
-        }
-      }
+      // let price: number | null = null;
+      // if (paidNodes.length > 0) {
+      //   price = accessBarrier.attrs?.price ?? null;
 
-      const password = await match(input.password)
-        .with('', () => undefined)
-        .with(P.string, (password) => hash(password))
-        .with(P.nullish, () => null)
-        .exhaustive();
+      //   if (price === null) {
+      //     throw new IntentionalError('가격을 설정해주세요');
+      //   } else {
+      //     if (price <= 0 || price > 1_000_000 || price % 100 !== 0) {
+      //       throw new IntentionalError('잘못된 가격이에요');
+      //     }
+      //   }
+      // }
 
-      await database.transaction(async (tx) => {
-        const freeContentId = await makePostContentId(tx, freeNodes);
-        const paidContentId = await makePostContentId(tx, paidNodes);
+      // const password = await match(input.password)
+      //   .with('', () => undefined)
+      //   .with(P.string, (password) => hash(password))
+      //   .with(P.nullish, () => null)
+      //   .exhaustive();
 
-        await tx
-          .update(PostRevisions)
-          .set({ kind: 'ARCHIVED' })
-          .where(and(eq(PostRevisions.postId, input.postId), eq(PostRevisions.kind, 'PUBLISHED')));
+      // await database.transaction(async (tx) => {
+      //   const freeContentId = await makePostContentId(tx, freeNodes);
+      //   const paidContentId = await makePostContentId(tx, paidNodes);
 
-        const [revision] = await tx
-          .insert(PostRevisions)
-          .values({
-            postId: input.postId,
-            userId: context.session.userId,
-            kind: 'PUBLISHED',
-            title: title.length > 0 ? title : null,
-            subtitle: subtitle.length > 0 ? subtitle : null,
-            freeContentId,
-            paidContentId,
-            attributes,
-            price,
-            updatedAt: dayjs(),
-          })
-          .returning({ id: PostRevisions.id });
+      //   await tx
+      //     .update(PostRevisions)
+      //     .set({ kind: 'ARCHIVED' })
+      //     .where(and(eq(PostRevisions.postId, input.postId), eq(PostRevisions.kind, 'PUBLISHED')));
 
-        await tx.delete(PostTags).where(eq(PostTags.postId, input.postId));
-        for (const { name, kind } of input.tags) {
-          const tagId: string =
-            (await tx
-              .select({ id: Tags.id })
-              .from(Tags)
-              .where(eq(Tags.name, name))
-              .then(useFirstRow)
-              .then((row) => row?.id)) ??
-            (await tx
-              .insert(Tags)
-              .values({ name })
-              .returning({ id: Tags.id })
-              .then(useFirstRowOrThrow())
-              .then((row) => row.id));
-          await tx.insert(PostTags).values({ postId: input.postId, tagId, kind });
-        }
+      //   const [revision] = await tx
+      //     .insert(PostRevisions)
+      //     .values({
+      //       postId: input.postId,
+      //       userId: context.session.userId,
+      //       kind: 'PUBLISHED',
+      //       title: title.length > 0 ? title : null,
+      //       subtitle: subtitle.length > 0 ? subtitle : null,
+      //       freeContentId,
+      //       paidContentId,
+      //       attributes,
+      //       price,
+      //       updatedAt: dayjs(),
+      //     })
+      //     .returning({ id: PostRevisions.id });
 
-        await tx
-          .update(Posts)
-          .set({
-            state: 'PUBLISHED',
-            spaceId: input.spaceId,
-            memberId: meAsMember.id,
-            publishedAt: post.state === 'PUBLISHED' ? undefined : dayjs(),
-            publishedRevisionId: revision.id,
-            visibility: input.visibility,
-            ageRating: input.ageRating,
-            thumbnailId: input.thumbnailId ?? null,
-            externalSearchable: input.externalSearchable,
-            discloseStats: input.discloseStats,
-            receiveFeedback: input.receiveFeedback,
-            receivePatronage: input.receivePatronage,
-            receiveTagContribution: input.receiveTagContribution,
-            protectContent: input.protectContent,
-            commentQualification: input.commentQualification ?? 'ANY',
-            password,
-            category: input.category,
-            pairs: input.pairs,
-          })
-          .where(eq(Posts.id, input.postId));
+      //   await tx.delete(PostTags).where(eq(PostTags.postId, input.postId));
+      //   for (const { name, kind } of input.tags) {
+      //     const tagId: string =
+      //       (await tx
+      //         .select({ id: Tags.id })
+      //         .from(Tags)
+      //         .where(eq(Tags.name, name))
+      //         .then(useFirstRow)
+      //         .then((row) => row?.id)) ??
+      //       (await tx
+      //         .insert(Tags)
+      //         .values({ name })
+      //         .returning({ id: Tags.id })
+      //         .then(useFirstRowOrThrow())
+      //         .then((row) => row.id));
+      //     await tx.insert(PostTags).values({ postId: input.postId, tagId, kind });
+      //   }
 
-        if (post.collectionPost && (!input.collectionId || input.collectionId !== post.collectionPost.collectionId)) {
-          await tx.delete(SpaceCollectionPosts).where(eq(SpaceCollectionPosts.postId, input.postId));
-          await defragmentSpaceCollectionPosts(tx, post.collectionPost.collectionId);
-        }
+      //   await tx
+      //     .update(Posts)
+      //     .set({
+      //       state: 'PUBLISHED',
+      //       spaceId: input.spaceId,
+      //       memberId: meAsMember.id,
+      //       publishedAt: post.state === 'PUBLISHED' ? undefined : dayjs(),
+      //       publishedRevisionId: revision.id,
+      //       visibility: input.visibility,
+      //       ageRating: input.ageRating,
+      //       thumbnailId: input.thumbnailId ?? null,
+      //       externalSearchable: input.externalSearchable,
+      //       discloseStats: input.discloseStats,
+      //       receiveFeedback: input.receiveFeedback,
+      //       receivePatronage: input.receivePatronage,
+      //       receiveTagContribution: input.receiveTagContribution,
+      //       protectContent: input.protectContent,
+      //       commentQualification: input.commentQualification ?? 'ANY',
+      //       password,
+      //       category: input.category,
+      //       pairs: input.pairs,
+      //     })
+      //     .where(eq(Posts.id, input.postId));
 
-        if (input.collectionId && (!post.collectionPost || input.collectionId !== post.collectionPost.collectionId)) {
-          await tx
-            .insert(SpaceCollectionPosts)
-            .values({ collectionId: input.collectionId, postId: input.postId, order: 2_147_483_647 });
-          await defragmentSpaceCollectionPosts(tx, input.collectionId);
-        }
-      });
+      //   if (post.collectionPost && (!input.collectionId || input.collectionId !== post.collectionPost.collectionId)) {
+      //     await tx.delete(SpaceCollectionPosts).where(eq(SpaceCollectionPosts.postId, input.postId));
+      //     await defragmentSpaceCollectionPosts(tx, post.collectionPost.collectionId);
+      //   }
 
-      if (input.password) {
-        await redis.del(`Post:${input.postId}:passwordUnlock`);
-      }
+      //   if (input.collectionId && (!post.collectionPost || input.collectionId !== post.collectionPost.collectionId)) {
+      //     await tx
+      //       .insert(SpaceCollectionPosts)
+      //       .values({ collectionId: input.collectionId, postId: input.postId, order: 2_147_483_647 });
+      //     await defragmentSpaceCollectionPosts(tx, input.collectionId);
+      //   }
+      // });
 
-      await enqueueJob('indexPost', input.postId);
-      await enqueueJob('notifyIndexNow', input.postId);
+      // if (input.password) {
+      //   await redis.del(`Post:${input.postId}:passwordUnlock`);
+      // }
 
-      return input.postId;
+      // await enqueueJob('indexPost', input.postId);
+      // await enqueueJob('notifyIndexNow', input.postId);
+
+      // return input.postId;
     },
   }),
 
