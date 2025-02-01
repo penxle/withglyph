@@ -6,6 +6,7 @@
   import IconBold from '~icons/tabler/bold';
   import IconCheck from '~icons/tabler/check';
   import IconChevronDown from '~icons/tabler/chevron-down';
+  import IconCode from '~icons/tabler/code';
   import IconItalic from '~icons/tabler/italic';
   import IconSettings from '~icons/tabler/settings';
   import IconStrikethrough from '~icons/tabler/strikethrough';
@@ -235,6 +236,14 @@
       aria-pressed={editor?.isActive('underline')}
       icon={IconUnderline}
       on:click={() => editor?.chain().focus().toggleUnderline().run()}
+    />
+  </ToolbarButtonTooltip>
+
+  <ToolbarButtonTooltip message="코드로 표시">
+    <ToolbarButton
+      aria-pressed={editor?.isActive('code')}
+      icon={IconCode}
+      on:click={() => editor?.chain().focus().toggleCode().run()}
     />
   </ToolbarButtonTooltip>
 </div>

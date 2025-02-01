@@ -1,4 +1,5 @@
 export * from './bold';
+export * from './code';
 export * from './font-color';
 export * from './font-family';
 export * from './font-size';
