@@ -37,10 +37,24 @@
     slidesPerGroup: pages,
     grabCursor: true,
     spaceBetween: 0,
+    zoom: true,
+    simulateTouch: true,
+    touchRatio: 1,
+    touchStartPreventDefault: false,
+    passiveListeners: false,
 
     on: {
       slideChangeTransitionEnd: () => {
         activeIndex = swiperEl.swiper.activeIndex;
+      },
+      zoomChange: (scale: number) => {
+        if (scale > 1) {
+          swiperEl.swiper.allowSlideNext = false;
+          swiperEl.swiper.allowSlidePrev = false;
+        } else {
+          swiperEl.swiper.allowSlideNext = true;
+          swiperEl.swiper.allowSlidePrev = true;
+        }
       },
     },
   };
@@ -164,7 +178,9 @@
         }}
         on:keypress={null}
       >
-        <Image {id} style={css.raw({ objectFit: 'contain', size: 'full' })} />
+        <swiper-zoom-container>
+          <Image {id} style={css.raw({ objectFit: 'contain', size: 'full' })} />
+        </swiper-zoom-container>
       </swiper-slide>
     {/each}
   </swiper-container>
